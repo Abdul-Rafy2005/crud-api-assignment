@@ -1,6 +1,6 @@
 # Task API
 
-A simple CRUD REST API for managing tasks, built with Node.js and Express. Data is stored in a SQLite database (`tasks.db`), which persists automatically and survives server restarts.
+A simple CRUD REST API for managing tasks, built with Node.js, Express, and SQLite. Data is stored in a SQLite database (`tasks.db`), which persists automatically and survives server restarts.
 
 ## Install & Run
 
@@ -15,7 +15,7 @@ Server runs on `http://localhost:3000`. Interactive API docs available at `http:
 
 SQLite was chosen because it needs zero setup — no server to install or configure, just a single file (`tasks.db`). It's created automatically on first run, and unlike in-memory storage, data survives a server restart.
 
-## Where the Database Lives
+## Database
 
 The database file `tasks.db` is created automatically on first run and is git-ignored, so a fresh clone always starts with a clean database and the 3 seeded tasks.
 
