@@ -43,13 +43,7 @@ function saveDB() {
   fs.writeFileSync(DB_PATH, Buffer.from(data));
 }
 
-// Temporary: keep old array endpoints until we swap them out per stage
-let tasks = [
-  { id: 1, title: "Buy groceries", done: false },
-  { id: 2, title: "Read a book", done: true },
-  { id: 3, title: "Walk the dog", done: false },
-];
-let nextId = 4;
+// In-memory array removed — all data now lives in tasks.db
 
 app.get("/", (req, res) => {
   res.json({ name: "Task API", version: "1.0", endpoints: ["/tasks"] });
@@ -94,32 +88,57 @@ app.post("/tasks", (req, res) => {
 });
 
 app.put("/tasks/:id", (req, res) => {
-  const task = tasks.find((t) => t.id === parseInt(req.params.id));
-  if (!task) {
+  const stmt = db.prepare("SELECT id, title, done FROM tasks WHERE id = ?");
+  stmt.bind([parseInt(req.params.id)]);
+  if (!stmt.step()) {
+    stmt.free();
     return res.status(404).json({ error: `Task ${req.params.id} not found` });
   }
+  const [id, , currentDone] = stmt.get();
+  stmt.free();
+
   const { title, done } = req.body;
+  let newTitle = null;
+  let newDone = currentDone;
+
   if (title !== undefined) {
     if (typeof title !== "string" || title.trim() === "") {
       return res.status(400).json({ error: "Title must be a non-empty string" });
     }
-    task.title = title.trim();
+    newTitle = title.trim();
   }
   if (done !== undefined) {
     if (typeof done !== "boolean") {
       return res.status(400).json({ error: "Done must be a boolean" });
     }
-    task.done = done;
+    newDone = done ? 1 : 0;
   }
-  res.json(task);
+
+  if (newTitle !== null) {
+    db.run("UPDATE tasks SET title = ?, done = ? WHERE id = ?", [newTitle, newDone, id]);
+  } else {
+    db.run("UPDATE tasks SET done = ? WHERE id = ?", [newDone, id]);
+  }
+  saveDB();
+
+  const updated = db.prepare("SELECT id, title, done FROM tasks WHERE id = ?");
+  updated.bind([id]);
+  updated.step();
+  const [rid, rtitle, rdone] = updated.get();
+  updated.free();
+  res.json({ id: rid, title: rtitle, done: !!rdone });
 });
 
 app.delete("/tasks/:id", (req, res) => {
-  const index = tasks.findIndex((t) => t.id === parseInt(req.params.id));
-  if (index === -1) {
+  const stmt = db.prepare("SELECT id FROM tasks WHERE id = ?");
+  stmt.bind([parseInt(req.params.id)]);
+  if (!stmt.step()) {
+    stmt.free();
     return res.status(404).json({ error: `Task ${req.params.id} not found` });
   }
-  tasks.splice(index, 1);
+  stmt.free();
+  db.run("DELETE FROM tasks WHERE id = ?", [parseInt(req.params.id)]);
+  saveDB();
   res.status(204).send();
 });
 
