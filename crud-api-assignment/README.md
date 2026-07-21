@@ -40,4 +40,4 @@ Content-Type: application/json
 
 Interactive API documentation is served at `http://localhost:3000/docs`.
 
-<!-- TODO: Add Swagger UI screenshot here -->
+![Swagger UI](Swagger.png)
