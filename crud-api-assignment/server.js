@@ -41,6 +41,36 @@ app.post("/tasks", (req, res) => {
   res.status(201).json(task);
 });
 
+app.put("/tasks/:id", (req, res) => {
+  const task = tasks.find((t) => t.id === parseInt(req.params.id));
+  if (!task) {
+    return res.status(404).json({ error: `Task ${req.params.id} not found` });
+  }
+  const { title, done } = req.body;
+  if (title !== undefined) {
+    if (typeof title !== "string" || title.trim() === "") {
+      return res.status(400).json({ error: "Title must be a non-empty string" });
+    }
+    task.title = title.trim();
+  }
+  if (done !== undefined) {
+    if (typeof done !== "boolean") {
+      return res.status(400).json({ error: "Done must be a boolean" });
+    }
+    task.done = done;
+  }
+  res.json(task);
+});
+
+app.delete("/tasks/:id", (req, res) => {
+  const index = tasks.findIndex((t) => t.id === parseInt(req.params.id));
+  if (index === -1) {
+    return res.status(404).json({ error: `Task ${req.params.id} not found` });
+  }
+  tasks.splice(index, 1);
+  res.status(204).send();
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
