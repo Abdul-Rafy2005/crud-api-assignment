@@ -60,15 +60,26 @@ app.get("/health", (req, res) => {
 });
 
 app.get("/tasks", (req, res) => {
+  const rows = db.exec("SELECT id, title, done FROM tasks");
+  if (!rows.length) return res.json([]);
+  const tasks = rows[0].values.map(([id, title, done]) => ({
+    id,
+    title,
+    done: !!done,
+  }));
   res.json(tasks);
 });
 
 app.get("/tasks/:id", (req, res) => {
-  const task = tasks.find((t) => t.id === parseInt(req.params.id));
-  if (!task) {
-    return res.status(404).json({ error: `Task ${req.params.id} not found` });
+  const stmt = db.prepare("SELECT id, title, done FROM tasks WHERE id = ?");
+  stmt.bind([parseInt(req.params.id)]);
+  if (stmt.step()) {
+    const [id, title, done] = stmt.get();
+    stmt.free();
+    return res.json({ id, title, done: !!done });
   }
-  res.json(task);
+  stmt.free();
+  res.status(404).json({ error: `Task ${req.params.id} not found` });
 });
 
 app.post("/tasks", (req, res) => {
