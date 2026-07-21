@@ -1,6 +1,6 @@
 # Task API
 
-A simple CRUD REST API for managing tasks, built with Node.js, Express, and SQLite. Data persists across restarts via a local SQLite database file.
+A simple CRUD REST API for managing tasks, built with Node.js and Express. Data is stored in a SQLite database (`tasks.db`), which persists automatically and survives server restarts.
 
 ## Install & Run
 
@@ -13,10 +13,11 @@ Server runs on `http://localhost:3000`. Interactive API docs available at `http:
 
 ## Why SQLite?
 
-- **Single file** — the entire database is one `tasks.db` file, no server or config needed.
-- **Zero setup** — no Docker, no install, no connection strings. Just run the app.
-- **Survives restarts** — unlike in-memory storage, your data persists when the server stops and starts again.
-- `tasks.db` is git-ignored and auto-created on first run with 3 seed tasks.
+SQLite was chosen because it needs zero setup — no server to install or configure, just a single file (`tasks.db`). It's created automatically on first run, and unlike in-memory storage, data survives a server restart.
+
+## Where the Database Lives
+
+The database file `tasks.db` is created automatically on first run and is git-ignored, so a fresh clone always starts with a clean database and the 3 seeded tasks.
 
 ## Endpoints
 
@@ -43,15 +44,15 @@ Content-Type: application/json
 {"id":4,"title":"Learn SQLite","done":false}
 ```
 
-## Inspecting the Database
+## Exploring the Database Directly
 
-Open `tasks.db` in [DB Browser for SQLite](https://sqlitebrowser.org/). Example query to run in the Execute SQL tab:
+Open `tasks.db` in [DB Browser for SQLite](https://sqlitebrowser.org/) and run:
 
 ```sql
 SELECT * FROM tasks;
 ```
 
-This returns all tasks with their id, title, and done status (0/1).
+This returns every row with its `id`, `title`, and `done` (0/1) — the full contents of the tasks table.
 
 <!-- TODO: Add DB Browser screenshot here -->
 
